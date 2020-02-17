@@ -1,0 +1,28 @@
+{
+    "name": "imper86/php-asana-api",
+    "description": "Simple and cool PHP Asana API client",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "imper",
+            "email": "me@imper.info"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "ext-json": "*",
+        "imper86/php-oauth2-client": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Imper86\\AsanaApi\\": "src"
+        }
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^4.3",
+        "php-http/guzzle6-adapter": "^2.0",
+        "http-interop/http-factory-guzzle": "^1.0",
+        "imper86/autotoken-plugin": "^1.0"
+    }
+}
