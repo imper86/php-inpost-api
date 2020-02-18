@@ -4,17 +4,17 @@
 namespace Imper86\ImmiApi\Resource;
 
 
-use Imper86\ImmiApi\Resource\User\InvoiceAddresses;
-use Imper86\ImmiApi\Resource\User\PriceRules;
-use Imper86\ImmiApi\Resource\User\ShippingAddresses;
+use Imper86\ImmiApi\Resource\Order\InvoiceAddresses;
+use Imper86\ImmiApi\Resource\Order\Items;
+use Imper86\ImmiApi\Resource\Order\ShippingAddresses;
 
-class Users extends AbstractResource
+class Orders extends AbstractResource
 {
-    use GetTrait, PostTrait, PutTrait;
+    use GetTrait, PostTrait, PutTrait, DeleteTrait;
 
     protected function getBaseUri(): string
     {
-        return '/users';
+        return '/orders';
     }
 
     public function invoiceAddresses(): InvoiceAddresses
@@ -22,9 +22,9 @@ class Users extends AbstractResource
         return new InvoiceAddresses($this->immi);
     }
 
-    public function priceRules(): PriceRules
+    public function items(): Items
     {
-        return new PriceRules($this->immi);
+        return new Items($this->immi);
     }
 
     public function shippingAddresses(): ShippingAddresses

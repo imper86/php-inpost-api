@@ -1,6 +1,6 @@
 {
-    "name": "imper86/php-asana-api",
-    "description": "Simple and cool PHP Asana API client",
+    "name": "imper86/php-immi-api",
+    "description": "PHP SDK for immi.shop API",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -12,11 +12,12 @@
     "require": {
         "php": "^7.1",
         "ext-json": "*",
-        "imper86/php-oauth2-client": "^1.1"
+        "imper86/php-oauth2-client": "^1.1",
+        "lcobucci/jwt": "^3.3"
     },
     "autoload": {
         "psr-4": {
-            "Imper86\\AsanaApi\\": "src"
+            "Imper86\\ImmiApi\\": "src"
         }
     },
     "require-dev": {

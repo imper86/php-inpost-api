@@ -6,7 +6,7 @@
  * Time: 13:30
  */
 
-namespace Imper86\AsanaApi\Resource;
+namespace Imper86\ImmiApi\Resource;
 
 interface ResourceInterface
 {

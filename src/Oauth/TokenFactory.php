@@ -6,11 +6,12 @@
  * Time: 16:57
  */
 
-namespace Imper86\AsanaApi\Oauth;
+namespace Imper86\ImmiApi\Oauth;
 
 use Imper86\OauthClient\Factory\TokenFactoryInterface;
 use Imper86\OauthClient\Model\Token;
 use Imper86\OauthClient\Model\TokenInterface;
+use Lcobucci\JWT\Parser;
 use Psr\Http\Message\ResponseInterface;
 
 class TokenFactory implements TokenFactoryInterface
@@ -27,11 +28,13 @@ class TokenFactory implements TokenFactoryInterface
             $data['refresh_token'] = $oldToken->getRefreshToken();
         }
 
+        $idToken = !empty($data['id_token']) ? (new Parser())->parse($data['id_token']) : null;
+
         return new Token([
             'access_token' => $data['access_token'],
-            'refresh_token' => $data['refresh_token'],
+            'refresh_token' => $data['refresh_token'] ?? null,
             'expiry_time' => time()+$data['expires_in'],
-            'resource_owner_id' => $data['data']['gid'],
+            'resource_owner_id' => $idToken ? $idToken->getClaim('uid') : null,
             'grant_type' => $grantType,
         ]);
     }

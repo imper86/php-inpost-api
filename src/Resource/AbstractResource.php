@@ -6,9 +6,9 @@
  * Time: 14:40
  */
 
-namespace Imper86\AsanaApi\Resource;
+namespace Imper86\ImmiApi\Resource;
 
-use Imper86\AsanaApi\AsanaInterface;
+use Imper86\ImmiApi\ImmiInterface;
 use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -18,9 +18,9 @@ use Psr\Http\Message\UriFactoryInterface;
 abstract class AbstractResource implements ResourceInterface
 {
     /**
-     * @var AsanaInterface
+     * @var ImmiInterface
      */
-    private $asana;
+    protected $immi;
     /**
      * @var RequestFactoryInterface
      */
@@ -39,16 +39,16 @@ abstract class AbstractResource implements ResourceInterface
     private $streamFactory;
 
 
-    public function __construct(AsanaInterface $asana)
+    public function __construct(ImmiInterface $immi)
     {
-        $this->asana = $asana;
-        $this->requestFactory = $asana->getHttpClientBuilder()->getRequestFactory();
-        $this->uriFactory = $asana->getHttpClientBuilder()->getUriFactory();
-        $this->streamFactory = $asana->getHttpClientBuilder()->getStreamFactory();
-        $this->httpClient = $asana->getHttpClientBuilder()->getHttpClient();
+        $this->immi = $immi;
+        $this->requestFactory = $immi->getHttpClientBuilder()->getRequestFactory();
+        $this->uriFactory = $immi->getHttpClientBuilder()->getUriFactory();
+        $this->streamFactory = $immi->getHttpClientBuilder()->getStreamFactory();
+        $this->httpClient = $immi->getHttpClientBuilder()->getHttpClient();
     }
 
-    protected function get(string $uri, ?array $query = null): array
+    protected function apiGet(string $uri, ?array $query = null): ?array
     {
         $uri = $this->uriFactory->createUri($uri);
 
@@ -62,7 +62,7 @@ abstract class AbstractResource implements ResourceInterface
         return $this->transformResponse($response);
     }
 
-    protected function post(string $uri, ?array $body = null): array
+    protected function apiPost(string $uri, ?array $body = null): ?array
     {
         $request = $this->requestFactory->createRequest('POST', $uri);
 
@@ -76,7 +76,7 @@ abstract class AbstractResource implements ResourceInterface
         return $this->transformResponse($response);
     }
 
-    protected function put(string $uri, ?array $body = null): array
+    protected function apiPut(string $uri, ?array $body = null): ?array
     {
         $request = $this->requestFactory->createRequest('PUT', $uri);
 
@@ -90,7 +90,7 @@ abstract class AbstractResource implements ResourceInterface
         return $this->transformResponse($response);
     }
 
-    protected function delete(string $uri): array
+    protected function apiDelete(string $uri): ?array
     {
         $request = $this->requestFactory->createRequest('DELETE', $uri);
         $response = $this->httpClient->sendRequest($request);
@@ -98,7 +98,7 @@ abstract class AbstractResource implements ResourceInterface
         return $this->transformResponse($response);
     }
 
-    private function transformResponse(ResponseInterface $response): array
+    private function transformResponse(ResponseInterface $response): ?array
     {
         return json_decode($response->getBody()->__toString(), true);
     }
