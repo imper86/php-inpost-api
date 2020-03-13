@@ -1,41 +1,27 @@
 <?php
-/**
- * Author: Adrian Szuszkiewicz <me@imper.info>
- * Github: https://github.com/imper86
- * Date: 25.10.2019
- * Time: 16:57
- */
 
-namespace Imper86\ImmiApi\Oauth;
 
-use Imper86\OauthClient\Factory\TokenFactoryInterface;
-use Imper86\OauthClient\Model\Token;
-use Imper86\OauthClient\Model\TokenInterface;
+namespace Imper86\PhpAllegroApi\Oauth;
+
+
+use Imper86\PhpAllegroApi\Model\Token;
+use Imper86\PhpAllegroApi\Model\TokenInterface;
 use Lcobucci\JWT\Parser;
 use Psr\Http\Message\ResponseInterface;
 
 class TokenFactory implements TokenFactoryInterface
 {
-    public function createFromResponse(
-        string $grantType,
-        ResponseInterface $response,
-        ?TokenInterface $oldToken = null
-    ): TokenInterface
+    public function createFromResponse(ResponseInterface $response, string $grantType): TokenInterface
     {
-        $data = json_decode($response->getBody()->__toString(), true);
-
-        if (empty($data['refresh_token']) && $oldToken) {
-            $data['refresh_token'] = $oldToken->getRefreshToken();
-        }
-
-        $idToken = !empty($data['id_token']) ? (new Parser())->parse($data['id_token']) : null;
+        $body = json_decode($response->getBody()->__toString(), true);
+        $parsed = (new Parser())->parse($body['access_token']);
 
         return new Token([
-            'access_token' => $data['access_token'],
-            'refresh_token' => $data['refresh_token'] ?? null,
-            'expiry_time' => time()+$data['expires_in'],
-            'resource_owner_id' => $idToken ? $idToken->getClaim('uid') : null,
+            'access_token' => $body['access_token'],
+            'refresh_token' => $body['refresh_token'] ?? null,
             'grant_type' => $grantType,
+            'expiry' => $parsed->getClaim('exp'),
+            'user_id' => $parsed->hasClaim('user_name') ? $parsed->getClaim('user_name') : null,
         ]);
     }
 }

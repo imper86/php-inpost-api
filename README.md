@@ -1,121 +1,85 @@
-# Immi.shop API PHP SDK
+# Allegro.pl REST API PHP SDK
 
 ## Installation
 
 Just use composer:
 ```sh
-composer require imper86/php-immi-api
+composer require imper86/php-allegro-api
 ```
 
-## Authentication
+## Authentication & usage
 Library has a bunch of mechanisms that allows you to forget about
 tokens, expirations etc. But in order to start using it you must
 authorize user using Oauth flow.
 
-Create Credentials object:
 ```php
-use Imper86\OauthClient\Model\Credentials;
+use Imper86\PhpAllegroApi\AllegroApi;
+use Imper86\PhpAllegroApi\Model\Credentials;
+use Imper86\PhpAllegroApi\Oauth\FileTokenRepository;
+use Imper86\PhpAllegroApi\Plugin\AuthenticationPlugin;
 
-$credentials = new Credentials([
-    'client_id' => 'your_client_id',
-    'client_secret' => 'your_client_secret',
-    'redirect_uri' => 'http://localhost:8000/immi',
-]);
-```
+// first, create Credentials object
+$credentials = new Credentials(
+    'your-client-id',
+    'your-client-secret',
+    'your-redirect-uri',
+    true //is sandbox
+);
 
-Create TokenRepository object:
-```php
-use Imper86\OauthClient\Repository\FileTokenRepository;
+// create api client
+$api = new AllegroApi($credentials);
 
-$tokenRepository = new FileTokenRepository(__DIR__ . '/immi_tokens');
-```
-
-You can invent your own TokenRepository, just implement
-[TokenRepositoryInterface](https://github.com/imper86/php-oauth2-client/blob/master/src/Repository/TokenRepositoryInterface.php).
-You can use your DB, Redis, or anything you want.
-
-Create client:
-```php
-use Imper86\ImmiApi\Immi;
-
-$client = new Immi($credentials, $tokenRepository);
-```
-
-Get the authorization URL, and redirect your user:
-```php
+// get the authorization URL, and redirect your user:
 $state = 'your-random-secret-state';
-header(sprintf('Location: %s', $client->oauth2()->getAuthorizationUrl($state)));
-```
+header(sprintf('Location: %s', $api->oauth()->getAuthorizationUri(true, $state)));
 
-After successfull authorization, user will be redirected to your
-**redirect_uri** with *state* and *code* parameters.
+/*
+ * after successfull authorization, user will be refirected to your
+ * redirect_uri with state and code as query parameters
+ */
 
-Verify the state and fetch token:
-```php
-if ($state === $_GET['state'] ?? null) {
+// verify the state and fetch token
+if ($state !== $_GET['state'] ?? null) {
     throw new Exception('CSRF?!');
 }
 
-$token = $client->oauth2()->fetchToken($_GET['code']);
-```
+$token = $api->oauth()->fetchTokenWithCode($_GET['code']);
 
-Library will use your TokenRepository to store the token, and from
-now on you should only care about storing user's Asana gid.
+// create TokenRepository object
+$tokenRepository = new FileTokenRepository(
+    $token->getUserId(), 
+    __DIR__ . '/tokens'
+);
 
-You can get that id with:
-```php
-$token->getResourceOwnerId();
-```
+/*
+ * You can invent your own TokenRepository, just implement
+ * Imper86\PhpAllegroApi\Oauth\TokenRepositoryInterface
+ * You can use your DB, Redis, or anything you want.
+ */
 
-## Usage
-You can use client instantiated in auth part. To authorize requests you got many options.
-Easiest option is to use [imper86/autotoken-plugin](https://github.com/imper86/autotoken-plugin)
+// now you can add AuthenticationPlugin, which will take care
+// of maintaining your tokens
 
-```php
-use Imper86\AutoTokenPlugin\AutoTokenPlugin;
+$api->addPlugin(new AuthenticationPlugin($tokenRepository, $api->oauth()));
 
-$client->addPlugin(new AutoTokenPlugin($token->getResourceOwnerId(), $tokenRepository, $client->oauth2()));
-```
+// * note: of course you can use your own plugin, or AuthenticationPlugin from HTTPlug library
 
-You can also use HTTPlug built-in BearerPlugin, just like that:
-```php
-use Http\Client\Common\Plugin\AuthenticationPlugin;
-use Http\Message\Authentication\Bearer;
+// from now you can use these methods on AllegroApi object:
+$api->account()->(...);
+$api->afterSalesServiceConditions()->(...);
+$api->bidding()->(...);
+$api->billing()->(...);
+$api->me()->(...);
+$api->offers()->(...);
+$api->order()->(...);
+$api->payments()->(...);
+$api->pointsOfService()->(...);
+$api->pricing()->(...);
+$api->sale()->(...);
+$api->users()->(...);
 
-$client->addPlugin(new AuthenticationPlugin(new Bearer($token->getAccessToken())));
-```
-
-From now you can use these methods on $client:
-```php
-$client->attributes()->(...)
-$client->carts()->(...)
-$client->commands()->(...)
-$client->contactRequests()->(...)
-$client->countries()->(...)
-$client->orders()->(...)
-$client->products()->(...)
-$client->users()->(...)
-```
-
-Fast example:
-```php
-use Imper86\OauthClient\Model\Credentials;
-use Imper86\OauthClient\Repository\FileTokenRepository;
-use Imper86\ImmiApi\Immi;
-use Imper86\AutoTokenPlugin\AutoTokenPlugin;
-use Http\Client\Common\Plugin\ErrorPlugin;
-
-$credentials = new Credentials([
-    'client_id' => 'verysecretclientid',
-    'client_secret' => 'yourverysecretsecret',
-    'redirect_uri' => 'http://localhost:8000/immiapi',
-]);
-$tokenRepository = new FileTokenRepository('/tmp');
-$client = new Immi($credentials, $tokenRepository);
-$client->addPlugin(new AutoTokenPlugin('userid', $tokenRepository, $client->oauth2()));
-$client->addPlugin(new ErrorPlugin());
-
-var_dump($client->attributes()->options()->translations()->get('xfg-asdf'));
+// fast example:
+var_dump($api->sale()->offers()->tags()->get('123456'));
 ```
 
 If you use IDE with typehinting such as PHPStorm, you'll easily 
@@ -123,4 +87,4 @@ figure it out. If not, please
 [take a look in Resource directory](src/Resource)
 
 ## Contributing
-Any help will be very appreciated.
+Any help will be very appreciated :)

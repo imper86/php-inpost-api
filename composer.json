@@ -1,6 +1,6 @@
 {
-    "name": "imper86/php-immi-api",
-    "description": "PHP SDK for immi.shop API",
+    "name": "imper86/php-allegro-api",
+    "description": "PHP SDK for Allegro.pl REST API",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -12,18 +12,18 @@
     "require": {
         "php": "^7.1",
         "ext-json": "*",
-        "imper86/php-oauth2-client": "^1.1",
-        "lcobucci/jwt": "^3.3"
+        "lcobucci/jwt": "^3.3",
+        "imper86/php-http-cache-plugin": "^1.6",
+        "imper86/http-client-builder": "^1.0"
     },
     "autoload": {
         "psr-4": {
-            "Imper86\\ImmiApi\\": "src"
+            "Imper86\\PhpAllegroApi\\": "src"
         }
     },
     "require-dev": {
         "symfony/var-dumper": "^4.3",
         "php-http/guzzle6-adapter": "^2.0",
-        "http-interop/http-factory-guzzle": "^1.0",
-        "imper86/autotoken-plugin": "^1.0"
+        "http-interop/http-factory-guzzle": "^1.0"
     }
 }

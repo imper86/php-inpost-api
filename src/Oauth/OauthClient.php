@@ -6,42 +6,135 @@
  * Time: 16:44
  */
 
-namespace Imper86\ImmiApi\Oauth;
+namespace Imper86\PhpAllegroApi\Oauth;
 
-use Imper86\OauthClient\Constants\ContentType;
-use Imper86\OauthClient\Constants\TokenEndpointCredentialsPlace;
-use Imper86\OauthClient\Constants\TokenEndpointParamsPlace;
-use Imper86\OauthClient\Model\CredentialsInterface;
-use Imper86\OauthClient\OauthClient as BaseOauthClient;
-use Imper86\OauthClient\Repository\TokenRepositoryInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Http\Client\Common\Plugin;
+use Http\Client\Common\Plugin\ErrorPlugin;
+use Imper86\HttpClientBuilder\Builder;
+use Imper86\HttpClientBuilder\BuilderInterface;
+use Imper86\PhpAllegroApi\Enum\ContentType;
+use Imper86\PhpAllegroApi\Enum\EndpointHost;
+use Imper86\PhpAllegroApi\Enum\GrantType;
+use Imper86\PhpAllegroApi\Model\CredentialsInterface;
+use Imper86\PhpAllegroApi\Model\TokenInterface;
+use Imper86\PhpAllegroApi\Plugin\OauthUriPlugin;
+use Imper86\PhpAllegroApi\Plugin\SandboxUriPlugin;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\UriInterface;
 
-class OauthClient extends BaseOauthClient
+class OauthClient implements OauthClientInterface
 {
-    public function __construct(
-        CredentialsInterface $credentials,
-        UriFactoryInterface $uriFactory,
-        ?TokenRepositoryInterface $tokenRepository
-    )
-    {
-        $baseUri = $uriFactory->createUri($credentials->getBaseUri() ?? 'https://api.b2b.immi.shop');
+    /**
+     * @var CredentialsInterface
+     */
+    private $credentials;
+    /**
+     * @var BuilderInterface
+     */
+    private $builder;
+    /**
+     * @var TokenFactoryInterface
+     */
+    private $tokenFactory;
 
-        parent::__construct([
-            'token_endpoint' => [
-                'url' => $baseUri->withPath('/oauth/v2/token')->__toString(),
-                'method' => 'POST',
-                'params_place' => TokenEndpointParamsPlace::BODY,
-                'credentials_place' => TokenEndpointCredentialsPlace::HEADER_BASIC_AUTH,
-                'content_type' => ContentType::FORM_URLENCODED,
-                'accept' => ContentType::JSON,
-            ],
-            'authorize_endpoint' => [
-                'url' => $baseUri->withPath('/oauth/v2/authorize')->__toString(),
-                'scope_delimiter' => ' ',
-            ],
-            'token_repository' => $tokenRepository,
-            'credentials' => $credentials,
-            'token_factory' => new TokenFactory(),
-        ]);
+    public function __construct(CredentialsInterface $credentials)
+    {
+        $this->credentials = $credentials;
+        $this->tokenFactory = new TokenFactory();
+        $this->builder = new Builder();
+        $this->builder->addPlugin(new ErrorPlugin());
+        $this->builder->addPlugin(new OauthUriPlugin());
+
+        if ($credentials->isSandbox()) {
+            $this->builder->addPlugin(new SandboxUriPlugin());
+        }
+    }
+
+    public function getAuthorizationUri(bool $prompt = true, ?string $state = null): UriInterface
+    {
+        $query = [
+            'client_id' => $this->credentials->getClientId(),
+            'redirect_uri' => $this->credentials->getRedirectUri(),
+            'response_type' => 'code',
+        ];
+
+        if ($state) {
+            $query['state'] = $state;
+        }
+
+        if ($prompt) {
+            $query['prompt'] = 'confirm';
+        }
+
+        $uri = $this->builder->getUriFactory()->createUri('/auth/oauth/authorize')
+            ->withScheme('https')
+            ->withHost(EndpointHost::OAUTH)
+            ->withQuery(http_build_query($query));
+
+        if ($this->credentials->isSandbox()) {
+            $uri->withHost($uri->getHost() . EndpointHost::SANDBOX_SUFFIX);
+        }
+
+        return $uri;
+    }
+
+    public function fetchTokenWithCode(string $code): TokenInterface
+    {
+        $query = [
+            'grant_type' => GrantType::AUTHORIZATION_CODE,
+            'code' => $code,
+            'redirect_uri' => $this->credentials->getRedirectUri(),
+        ];
+
+        $response = $this->builder->getHttpClient()->sendRequest($this->generateRequest($query));
+
+        return $this->tokenFactory->createFromResponse($response, GrantType::AUTHORIZATION_CODE);
+    }
+
+    public function fetchTokenWithRefreshToken(string $refreshToken): TokenInterface
+    {
+        $query = [
+            'grant_type' => GrantType::REFRESH_TOKEN,
+            'refresh_token' => $refreshToken,
+            'redirect_uri' => $this->credentials->getRedirectUri(),
+        ];
+
+        $response = $this->builder->getHttpClient()->sendRequest($this->generateRequest($query));
+
+        return $this->tokenFactory->createFromResponse($response, GrantType::REFRESH_TOKEN);
+    }
+
+    public function fetchTokenWithClientCredentials(): TokenInterface
+    {
+        $query = ['grant_type' => GrantType::CLIENT_CREDENTIALS];
+        $response = $this->builder->getHttpClient()->sendRequest($this->generateRequest($query));
+
+        return $this->tokenFactory->createFromResponse($response, GrantType::CLIENT_CREDENTIALS);
+    }
+
+    public function addPlugin(Plugin $plugin): void
+    {
+        $this->builder->addPlugin($plugin);
+    }
+
+    public function removePlugin(string $fqcn): void
+    {
+        $this->builder->removePlugin($fqcn);
+    }
+
+    private function generateRequest(array $query): RequestInterface
+    {
+        $uri = $this->builder->getUriFactory()->createUri('/auth/oauth/token')
+            ->withQuery(http_build_query($query));
+        $auth = base64_encode(sprintf(
+            '%s:%s',
+            $this->credentials->getClientId(),
+            $this->credentials->getClientSecret()
+        ));
+
+        return $this->builder->getRequestFactory()->createRequest('POST', $uri)
+            ->withHeader('Content-Type', ContentType::X_WWW_FORM_URLENCODED)
+            ->withHeader('Accept', ContentType::JSON)
+            ->withHeader('Authorization', sprintf('Basic %s', $auth));
     }
 }

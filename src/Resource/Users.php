@@ -1,34 +1,17 @@
 <?php
 
 
-namespace Imper86\ImmiApi\Resource;
+namespace Imper86\PhpAllegroApi\Resource;
 
 
-use Imper86\ImmiApi\Resource\User\InvoiceAddresses;
-use Imper86\ImmiApi\Resource\User\PriceRules;
-use Imper86\ImmiApi\Resource\User\ShippingAddresses;
+use Imper86\PhpAllegroApi\Resource\Users\RatingsSummary;
 
+/**
+ * Class Users
+ * @package Imper86\PhpAllegroApi\Resource
+ *
+ * @method RatingsSummary ratingsSummary()
+ */
 class Users extends AbstractResource
 {
-    use GetTrait, PostTrait, PutTrait;
-
-    protected function getBaseUri(): string
-    {
-        return '/users';
-    }
-
-    public function invoiceAddresses(): InvoiceAddresses
-    {
-        return new InvoiceAddresses($this->immi);
-    }
-
-    public function priceRules(): PriceRules
-    {
-        return new PriceRules($this->immi);
-    }
-
-    public function shippingAddresses(): ShippingAddresses
-    {
-        return new ShippingAddresses($this->immi);
-    }
 }
