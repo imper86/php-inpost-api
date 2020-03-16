@@ -40,6 +40,7 @@ class AuthenticationPlugin implements Plugin
 
         if ($token->isExpired()) {
             $token = $this->handleExpired($token);
+            $this->tokenRepository->save($token);
         }
 
         return $next($request->withHeader('Authorization', sprintf('Bearer %s', $token->__toString())));
