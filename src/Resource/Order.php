@@ -4,6 +4,7 @@
 namespace Imper86\PhpAllegroApi\Resource;
 
 
+use Imper86\PhpAllegroApi\Resource\Order\Carriers;
 use Imper86\PhpAllegroApi\Resource\Order\CheckoutForms;
 use Imper86\PhpAllegroApi\Resource\Order\Events;
 use Imper86\PhpAllegroApi\Resource\Order\EventStats;
@@ -17,6 +18,7 @@ use Imper86\PhpAllegroApi\Resource\Order\LineItemIdMappings;
  * @method EventStats eventStats()
  * @method CheckoutForms checkoutForms()
  * @method LineItemIdMappings lineItemIdMappings()
+ * @method Carriers carriers()
  */
 class Order extends AbstractResource
 {
