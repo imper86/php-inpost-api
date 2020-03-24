@@ -9,6 +9,7 @@ use Imper86\PhpAllegroApi\Resource\Order\CheckoutForms;
 use Imper86\PhpAllegroApi\Resource\Order\Events;
 use Imper86\PhpAllegroApi\Resource\Order\EventStats;
 use Imper86\PhpAllegroApi\Resource\Order\LineItemIdMappings;
+use Imper86\PhpAllegroApi\Resource\Order\RefundClaims;
 
 /**
  * Class Order
@@ -19,6 +20,7 @@ use Imper86\PhpAllegroApi\Resource\Order\LineItemIdMappings;
  * @method CheckoutForms checkoutForms()
  * @method LineItemIdMappings lineItemIdMappings()
  * @method Carriers carriers()
+ * @method RefundClaims refundClaims()
  */
 class Order extends AbstractResource
 {
