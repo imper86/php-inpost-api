@@ -9,8 +9,18 @@ use Psr\Http\Message\ResponseInterface;
 
 class Warranties extends AbstractResource
 {
-    public function get(array $query): ResponseInterface
+    public function get(?array $query, ?string $id = null): ResponseInterface
     {
-        return $this->apiGet('/after-sales-service-conditions/warranties', $query);
+        return $this->apiGet(sprintf('/after-sales-service-conditions/warranties%s', $id ? "/{$id}" : ''), $query);
+    }
+
+    public function post(array $body): ResponseInterface
+    {
+        return $this->apiPost('/after-sales-service-conditions/warranties', $body);
+    }
+
+    public function put(string $id, array $body): ResponseInterface
+    {
+        return $this->apiPut("/after-sales-service-conditions/warranties/{$id}", $body);
     }
 }
