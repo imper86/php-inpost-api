@@ -6,9 +6,9 @@
  * Time: 14:40
  */
 
-namespace Imper86\PhpAllegroApi\Resource;
+namespace Imper86\PhpInpostApi\Resource;
 
-use Imper86\PhpAllegroApi\AllegroApiInterface;
+use Imper86\PhpInpostApi\InpostApiInterface;
 use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -21,7 +21,7 @@ use ReflectionClass;
 abstract class AbstractResource implements ResourceInterface
 {
     /**
-     * @var AllegroApiInterface
+     * @var InpostApiInterface
      */
     protected $client;
     /**
@@ -46,7 +46,7 @@ abstract class AbstractResource implements ResourceInterface
     protected $reflection;
 
 
-    public function __construct(AllegroApiInterface $client)
+    public function __construct(InpostApiInterface $client)
     {
         $this->client = $client;
         $this->requestFactory = $client->getBuilder()->getRequestFactory();
@@ -67,7 +67,7 @@ abstract class AbstractResource implements ResourceInterface
         throw new InvalidArgumentException(sprintf('%s resource not found', $name));
     }
 
-    protected function apiGet(string $uri, ?array $query = null, ?string $contentType = null): ResponseInterface
+    protected function apiGet(string $uri, ?array $query = null): ResponseInterface
     {
         $uri = $this->uriFactory->createUri($uri);
 
@@ -77,14 +77,10 @@ abstract class AbstractResource implements ResourceInterface
 
         $request = $this->requestFactory->createRequest('GET', $uri);
 
-        if ($contentType) {
-            $request = $this->addContentHeaders($request, $contentType);
-        }
-
         return $this->httpClient->sendRequest($request);
     }
 
-    protected function apiPost(string $uri, ?array $body = null, ?string $contentType = null): ResponseInterface
+    protected function apiPost(string $uri, ?array $body = null): ResponseInterface
     {
         $request = $this->requestFactory->createRequest('POST', $uri);
 
@@ -93,14 +89,10 @@ abstract class AbstractResource implements ResourceInterface
             $request = $request->withBody($stream);
         }
 
-        if ($contentType) {
-            $request = $this->addContentHeaders($request, $contentType);
-        }
-
         return $this->httpClient->sendRequest($request);
     }
 
-    protected function apiPut(string $uri, ?array $body = null, ?string $contentType = null): ResponseInterface
+    protected function apiPut(string $uri, ?array $body = null): ResponseInterface
     {
         $request = $this->requestFactory->createRequest('PUT', $uri);
 
@@ -109,14 +101,10 @@ abstract class AbstractResource implements ResourceInterface
             $request = $request->withBody($stream);
         }
 
-        if ($contentType) {
-            $request = $this->addContentHeaders($request, $contentType);
-        }
-
         return $this->httpClient->sendRequest($request);
     }
 
-    protected function apiDelete(string $uri, ?array $query = null, ?string $contentType = null): ResponseInterface
+    protected function apiDelete(string $uri, ?array $query = null): ResponseInterface
     {
         $uri = $this->uriFactory->createUri($uri);
 
@@ -126,16 +114,6 @@ abstract class AbstractResource implements ResourceInterface
 
         $request = $this->requestFactory->createRequest('DELETE', $uri);
 
-        if ($contentType) {
-            $request = $this->addContentHeaders($request, $contentType);
-        }
-
         return $this->httpClient->sendRequest($request);
-    }
-
-    private function addContentHeaders(RequestInterface $request, string $contentType): RequestInterface
-    {
-        return $request->withHeader('Content-Type', $contentType)
-            ->withHeader('Accept', $contentType);
     }
 }

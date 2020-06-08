@@ -1,85 +1,49 @@
-# Allegro.pl REST API PHP SDK
+# Inpost ShipX PHP SDK
 
 ## Installation
 
 Just use composer:
 ```sh
-composer require imper86/php-allegro-api
+composer require imper86/php-inpost-api
 ```
 
-## Authentication & usage
-Library has a bunch of mechanisms that allows you to forget about
-tokens, expirations etc. But in order to start using it you must
-authorize user using Oauth flow.
+## Usage
+Using this library is very simple, fast example should be enough
+to understand how it works.
 
 ```php
-use Imper86\PhpAllegroApi\AllegroApi;
-use Imper86\PhpAllegroApi\Model\Credentials;
-use Imper86\PhpAllegroApi\Oauth\FileTokenRepository;
-use Imper86\PhpAllegroApi\Plugin\AuthenticationPlugin;
+use Imper86\PhpInpostApi\InpostApi;use Imper86\PhpInpostApi\Plugin\AcceptLanguagePlugin;
 
-// first, create Credentials object
-$credentials = new Credentials(
-    'your-client-id',
-    'your-client-secret',
-    'your-redirect-uri',
-    true //is sandbox
-);
+// if you want to use all resources you must ask Inpost for
+// access token via their contact form
+// https://inpost.pl/formularz-wsparcie
+$token = 'aaaa.aaaa';
 
 // create api client
-$api = new AllegroApi($credentials);
+$api = new InpostApi($token);
 
-// get the authorization URL, and redirect your user:
-$state = 'your-random-secret-state';
-header(sprintf('Location: %s', $api->oauth()->getAuthorizationUri(true, $state)));
+// this library provides optional Plugin for localizing
+// error messages
 
-/*
- * after successfull authorization, user will be refirected to your
- * redirect_uri with state and code as query parameters
- */
+$api->addPlugin(new AcceptLanguagePlugin('pl_PL'));
 
-// verify the state and fetch token
-if ($state !== $_GET['state'] ?? null) {
-    throw new Exception('CSRF?!');
-}
-
-$token = $api->oauth()->fetchTokenWithCode($_GET['code']);
-
-// create TokenRepository object
-$tokenRepository = new FileTokenRepository(
-    $token->getUserId(), 
-    __DIR__ . '/tokens'
-);
-
-/*
- * You can invent your own TokenRepository, just implement
- * Imper86\PhpAllegroApi\Oauth\TokenRepositoryInterface
- * You can use your DB, Redis, or anything you want.
- */
-
-// now you can add AuthenticationPlugin, which will take care
-// of maintaining your tokens
-
-$api->addPlugin(new AuthenticationPlugin($tokenRepository, $api->oauth()));
-
-// * note: of course you can use your own plugin, or AuthenticationPlugin from HTTPlug library
-
-// from now you can use these methods on AllegroApi object:
-$api->account()->(...);
-$api->afterSalesServiceConditions()->(...);
-$api->bidding()->(...);
-$api->billing()->(...);
-$api->me()->(...);
-$api->offers()->(...);
-$api->order()->(...);
-$api->payments()->(...);
-$api->pointsOfService()->(...);
-$api->pricing()->(...);
-$api->sale()->(...);
-$api->users()->(...);
+// from now you can use these api methods:
+$api->addressBooks()->(...);
+$api->batches()->(...);
+$api->dispatchOrders()->(...);
+$api->dispatchPoints()->(...);
+$api->mpks()->(...);
+$api->organizations()->(...);
+$api->points()->(...);
+$api->sendingMethods()->(...);
+$api->services()->(...);
+$api->shipments()->(...);
+$api->shipmentTemplates()->(...);
+$api->statuses()->(...);
+$api->tracking()->(...);
 
 // fast example:
-var_dump($api->sale()->offers()->tags()->get('123456'));
+var_dump($api->organizations()->shipments()->get('1234'));
 ```
 
 If you use IDE with typehinting such as PHPStorm, you'll easily 

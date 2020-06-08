@@ -6,7 +6,7 @@
  * Time: 13:30
  */
 
-namespace Imper86\PhpAllegroApi\Resource;
+namespace Imper86\PhpInpostApi\Resource;
 
 interface ResourceInterface
 {

@@ -1,6 +1,6 @@
 {
-    "name": "imper86/php-allegro-api",
-    "description": "PHP SDK for Allegro.pl REST API",
+    "name": "imper86/php-inpost-api",
+    "description": "PHP SDK for Inpost ShipX API",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Imper86\\PhpAllegroApi\\": "src"
+            "Imper86\\PhpInpostApi\\": "src"
         }
     },
     "require-dev": {
