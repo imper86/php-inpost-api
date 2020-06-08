@@ -14,7 +14,7 @@ class UserAgentHeaderPlugin implements Plugin
     {
         if (!$request->hasHeader('X-User-Agent')) {
             $request = $request->withHeader('X-User-Agent', 'imper86/php-inpost-api')
-                ->withHeader('X-User-Agent-Version', file_get_contents(__DIR__ . '/../../version'));
+                ->withHeader('X-User-Agent-Version', trim(file_get_contents(__DIR__ . '/../../version')));
         }
 
         return $next($request);
