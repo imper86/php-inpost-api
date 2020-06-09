@@ -17,6 +17,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use ReflectionClass;
+use Spatie\QueryString\QueryString;
 
 abstract class AbstractResource implements ResourceInterface
 {
@@ -72,7 +73,11 @@ abstract class AbstractResource implements ResourceInterface
         $uri = $this->uriFactory->createUri($uri);
 
         if ($query) {
-            $uri = $uri->withQuery(http_build_query($query));
+            $queryString = http_build_query($query);
+            $queryString = str_replace('%5B0', '[', $queryString);
+            $queryString = str_replace('%5D', ']', $queryString);
+
+            $uri = $uri->withQuery($queryString);
         }
 
         $request = $this->requestFactory->createRequest('GET', $uri);

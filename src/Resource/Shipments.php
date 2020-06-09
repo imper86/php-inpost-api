@@ -6,6 +6,7 @@ namespace Imper86\PhpInpostApi\Resource;
 use Imper86\PhpInpostApi\Resource\Shipments\Buy;
 use Imper86\PhpInpostApi\Resource\Shipments\Label;
 use Imper86\PhpInpostApi\Resource\Shipments\SelectOffer;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class Shipments
@@ -18,6 +19,11 @@ use Imper86\PhpInpostApi\Resource\Shipments\SelectOffer;
 class Shipments extends AbstractResource
 {
     use DeleteTrait, PutTrait;
+
+    public function get(string $id, ?array $query = null): ResponseInterface
+    {
+        return $this->apiGet(sprintf('%s/%s', $this->getBaseUri(), $id), $query);
+    }
 
     protected function getBaseUri(): string
     {
