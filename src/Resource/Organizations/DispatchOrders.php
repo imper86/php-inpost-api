@@ -22,7 +22,7 @@ class DispatchOrders extends AbstractResource
 {
     public function post(string $organizationId, array $body): ResponseInterface
     {
-        return $this->apiPost(sprintf('/v1/organizations/%/dispatch_orders', $organizationId), $body);
+        return $this->apiPost(sprintf('/v1/organizations/%s/dispatch_orders', $organizationId), $body);
     }
 
     public function get(string $organizationId, ?array $query = null): ResponseInterface
