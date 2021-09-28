@@ -72,9 +72,7 @@ abstract class AbstractResource implements ResourceInterface
 
         if ($query) {
             $queryString = http_build_query($query);
-            $queryString = str_replace('%5B', '[', $queryString);
-            $queryString = str_replace('%5D', ']', $queryString);
-            $queryString = preg_replace('/[\d+]/', '[]', $queryString);
+            $queryString = preg_replace('/%5B\d+%5D/', '[]', $queryString);
 
             $uri = $uri->withQuery($queryString);
         }
