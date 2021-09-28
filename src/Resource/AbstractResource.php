@@ -12,12 +12,10 @@ use Imper86\PhpInpostApi\InpostApiInterface;
 use InvalidArgumentException;
 use Psr\Http\Client\ClientInterface as HttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use ReflectionClass;
-use Spatie\QueryString\QueryString;
 
 abstract class AbstractResource implements ResourceInterface
 {
@@ -74,8 +72,9 @@ abstract class AbstractResource implements ResourceInterface
 
         if ($query) {
             $queryString = http_build_query($query);
-            $queryString = str_replace('%5B0', '[', $queryString);
+            $queryString = str_replace('%5B', '[', $queryString);
             $queryString = str_replace('%5D', ']', $queryString);
+            $queryString = preg_replace('/[\d+]/', '[]', $queryString);
 
             $uri = $uri->withQuery($queryString);
         }
