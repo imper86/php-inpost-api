@@ -12,7 +12,6 @@
     "require": {
         "php": ">=7.1",
         "ext-json": "*",
-        "lcobucci/jwt": "^4.1",
         "imper86/php-http-cache-plugin": "^2.0",
         "imper86/http-client-builder": "^2.0"
     },
