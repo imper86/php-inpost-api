@@ -42,11 +42,11 @@ $response = $api->organizations()->shipments()->post($organizationId, [
 
 $shipmentData = json_decode($response->getBody()->__toString(), true);
 
-do {
+while ($shipmentData['status'] !== 'confirmed') {
     sleep(1);
     $response = $api->shipments()->get($shipmentData['id']);
     $shipmentData = json_decode($response->getBody()->__toString(), true);
-} while ($shipmentData['status'] === 'confirmed');
+}
 
 $labelResponse = $api->shipments()->label()->get($shipmentData['id'], [
     'format' => 'Pdf',
